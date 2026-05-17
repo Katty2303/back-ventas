@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  db-ventas:
+    image: mysql:8
+    container_name: db-ventas
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Admin_Root_123! # root solo para admin, nunca expuesto a la app
+      MYSQL_DATABASE: ventas_db
+      MYSQL_USER: appuser # usuario sin privilegios root
+      MYSQL_PASSWORD: Apppass_Ventas_123!
+    ports:
+      - "3308:3306"
+    volumes:
+      - dbdata_ventas:/var/lib/mysql
+    networks:
+      - ventas_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend-ventas:
+    build:
+      context: ./Springboot-API-REST
+      dockerfile: Dockerfile
+    container_name: backend-ventas
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-ventas:3306/ventas_db?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: appuser # usuario de mínimo privilegio
+      SPRING_DATASOURCE_PASSWORD: Apppass_Ventas_123!
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      db-ventas:
+        condition: service_healthy
+    networks:
+      - ventas_net
+
+volumes:
+  dbdata_ventas:
+
+networks:
+  ventas_net:
+    driver: bridge
