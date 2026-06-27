@@ -1,3 +1,4 @@
+
 name: CI/CD Backend Ventas - EKS Deploy
 
 on:
@@ -5,9 +6,11 @@ on:
     branches:
       - deploy
 
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
 
     steps:
       - name: "1. Checkout del codigo"
